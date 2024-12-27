@@ -1,6 +1,9 @@
+import "../config.js"
 import mongoose from "mongoose"
 
 const connectionString = process.env.CONNECTION_STRING;
+// console.log(connectionString,"--connection-string");
+
 function connectDb() {
   mongoose
     .connect(connectionString, {

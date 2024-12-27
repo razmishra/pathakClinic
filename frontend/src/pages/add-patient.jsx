@@ -1,7 +1,12 @@
+import FormComponent from "@/components/FormComponent";
 import React from "react";
 
 const AddPatient = () => {
-  return <div>Add patient details here</div>;
+  return (
+    <div>
+      <FormComponent />
+    </div>
+  );
 };
 
 export default AddPatient;
