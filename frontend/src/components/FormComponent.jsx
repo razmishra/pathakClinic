@@ -257,6 +257,7 @@ const FormComponent = () => {
                   )}
                 />
               </FormControl>
+              <FormDescription>Select single or  multiple images.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

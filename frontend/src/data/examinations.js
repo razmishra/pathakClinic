@@ -145,3 +145,26 @@ export const patientsList = [
     sex: "Female",
   },
 ];
+
+export const drugList = [
+  { "drugName": "Amoxicillin", "quantity": 120 },
+  { "drugName": "Paracetamol", "quantity": 200 },
+  { "drugName": "Ibuprofen", "quantity": 150 },
+  { "drugName": "Lisinopril", "quantity": 90 },
+  { "drugName": "Metformin", "quantity": 180 },
+  { "drugName": "Atorvastatin", "quantity": 100 },
+  { "drugName": "Amlodipine", "quantity": 120 },
+  { "drugName": "Omeprazole", "quantity": 60 },
+  { "drugName": "Ciprofloxacin", "quantity": 30 },
+  { "drugName": "Levothyroxine", "quantity": 90 },
+  { "drugName": "Azithromycin", "quantity": 50 },
+  { "drugName": "Furosemide", "quantity": 100 },
+  { "drugName": "Warfarin", "quantity": 60 },
+  { "drugName": "Gabapentin", "quantity": 120 },
+  { "drugName": "Prednisone", "quantity": 60 },
+  { "drugName": "Clopidogrel", "quantity": 75 },
+  { "drugName": "Hydrochlorothiazide", "quantity": 120 },
+  { "drugName": "Sertraline", "quantity": 100 },
+  { "drugName": "Montelukast", "quantity": 30 },
+  { "drugName": "Losartan", "quantity": 90 }
+]
