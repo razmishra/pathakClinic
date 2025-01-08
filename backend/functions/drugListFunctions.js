@@ -1,11 +1,16 @@
 import drugListController from "../controller/drugListController.js";
+import drugListModel from "../models/drugModel.js";
 
 const getAllDrugs = async (req, res) => {
   try {
     return drugListController
       .getAllDrugs(req, res)
       .then((data) => {
-        return { success: true, message: "Patient added successfully", data };
+        return {
+          success: true,
+          message: "Drug list fetched successfully",
+          data,
+        };
       })
       .catch((error) => {
         throw { errorMessage: error };
@@ -41,6 +46,12 @@ const deleteDrug = async (req, res) => {
     if (!id) {
       return { success: false, errorMessage: "provide an id of drug" };
     }
+
+    const isAlreadyDeleted = await drugListModel.findById({ _id: id });
+    if (isAlreadyDeleted?.isDeleted) {
+      return { success: false, errorMessage: "Drug is already deleted" };
+    }
+
     return drugListController
       .deleteDrug(req, res)
       .then((data) => {
@@ -61,6 +72,12 @@ const updateDrug = async (req, res) => {
     if (!id) {
       return { success: false, errorMessage: "provide an id of drug" };
     }
+
+    const checkIfExists = await drugListModel.findById({ _id: id });
+    if (!checkIfExists) {
+      return { success: false, errorMessage: "Drug not found" };
+    }
+
     return drugListController
       .updateDrug(req, res)
       .then((data) => {

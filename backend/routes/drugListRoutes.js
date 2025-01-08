@@ -30,7 +30,7 @@ drugListRouter.post("/add-one", async (req, res) => {
 
 drugListRouter.delete("/delete-one/:id", async (req, res) => {
   return drugListFunctions
-    .addNewDrug(req, res)
+    .deleteDrug(req, res)
     .then((result) => {
       return responseHandler.sendSuccess(res, result, req);
     })
@@ -41,7 +41,7 @@ drugListRouter.delete("/delete-one/:id", async (req, res) => {
 
 drugListRouter.patch("/update-one/:id", async (req, res) => {
   return drugListFunctions
-    .addNewDrug(req, res)
+    .updateDrug(req, res)
     .then((result) => {
       return responseHandler.sendSuccess(res, result, req);
     })

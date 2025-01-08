@@ -2,7 +2,9 @@ import drugListModel from "../models/drugModel.js";
 
 const getAllDrugs = async (req, res) => {
   try {
-    const drugs = await drugListModel.find();
+    const drugs = await drugListModel.find({isDeleted: false});
+    console.log(drugs);
+
     return drugs;
   } catch (error) {
     console.error("Error fetching drugs:", error);
@@ -42,9 +44,8 @@ const deleteDrug = async (req, res) => {
 
 const updateDrug = async (req, res) => {
   try {
-    const { _id } = req?.params;
-    // what will be unique in every drug list
-    const drug = await drugListModel.findByIdAndUpdate(_id, req?.body, {
+    const { id } = req.params;
+    const drug = await drugListModel.findByIdAndUpdate({ _id: id }, req?.body, {
       new: true,
     });
     // what will be unique in every drug list
