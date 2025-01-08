@@ -10,12 +10,8 @@ const drug_list = () => {
     <div className="shadow-lg">
       <div className=" flex justify-between items-center">
         <span className="font-medium p-2 text-2xl">Drugs List</span>
-        <span>
-          <Input placeholder="Search drugs" className="" />
-        </span>
       </div>
-      <DrugList drugList={drugList}/>
-      <PaginationComponent pageOptions={[5, 10, 20]} />
+      <DrugList drugList={drugList} />
     </div>
   );
 };

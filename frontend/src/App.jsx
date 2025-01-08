@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Navigate,
   RouterProvider,
@@ -14,7 +15,7 @@ import Appointments from "./pages/appointments";
 import Examination from "./pages/examination";
 import DrugList from "./pages/drug-list";
 
-function App() {
+const App = () => {
   const isLoggedIn = localStorage.getItem("loggedIn");
   const router = createBrowserRouter([
     {
@@ -57,6 +58,6 @@ function App() {
     },
   ]);
   return <RouterProvider router={router} />;
-}
+};
 
 export default App;

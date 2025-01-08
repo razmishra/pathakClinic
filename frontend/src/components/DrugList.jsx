@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 import {
   Table,
   TableBody,
@@ -19,9 +20,48 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CircleMinus, CirclePlus, Edit, Trash2, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { BASE_URL, commonUrl } from "@/utils/commonUrl";
+import toast from "react-hot-toast";
+import { decideDrugRowBgColor } from "@/utils/randomFunctions";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+// import {
+//   Select,
+//   SelectTrigger,
+//   SelectContent,
+//   SelectItem,
+//   SelectValue,
+//   SelectGroup,
+// } from "@/components/ui/select";
+
+// Prepare potency options for react-select
+const potencyOptions = [
+  "1X",
+  "2X",
+  "3X",
+  "4X",
+  "5X",
+  "6X",
+  "12X",
+  "3C",
+  "6C",
+  "12C",
+  "30C",
+  "200C",
+  "1M",
+  "10M",
+  "0/1",
+  "0/2",
+  "0/3",
+  "0/4",
+  "0/6",
+  "0/8",
+].map((option) => ({ value: option, label: option }));
 
 const FormFields = ({ formData, setFormData, errors }) => (
   <div className="grid gap-4 py-4">
@@ -40,11 +80,16 @@ const FormFields = ({ formData, setFormData, errors }) => (
 
     <div className="grid gap-2">
       <Label htmlFor="potency">Potency*</Label>
-      <Input
+      <Select
         id="potency"
-        value={formData.potency}
-        onChange={(e) => setFormData({ ...formData, potency: e.target.value })}
+        value={potencyOptions.find((opt) => opt.value === formData.potency)}
+        onChange={(selectedOption) =>
+          setFormData({ ...formData, potency: selectedOption?.value || "" })
+        }
+        options={potencyOptions}
+        isClearable
         className={errors.potency ? "border-red-500" : ""}
+        placeholder="Select Potency"
       />
       {errors.potency && (
         <span className="text-red-500 text-sm">{errors.potency}</span>
@@ -123,7 +168,6 @@ const FormFields = ({ formData, setFormData, errors }) => (
 );
 
 const DrugList = () => {
-  const { toast } = useToast();
   const [drugs, setDrugs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -160,13 +204,11 @@ const DrugList = () => {
       const response = await axios.get(
         `${BASE_URL}${commonUrl.drugList.getAll}`
       );
-      setDrugs(response?.data ?? []);
+      const result = response?.data?.responseData?.data;
+
+      setDrugs(result ?? []);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch drugs",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch drug lists");
     }
   };
 
@@ -183,30 +225,25 @@ const DrugList = () => {
         `${BASE_URL}${commonUrl.drugList.addOne}`,
         formData
       );
-
-      if (response.data.success) {
+      const result = response?.data?.responseData;
+      if (result?.success) {
         fetchDrugs();
         setIsAddDialogOpen(false);
-        setFormData({
-          drugName: "",
-          potency: "",
-          brandName: "",
-          quantity: 0,
-          ml: 0,
-          drawerNumber: "",
-          description: "",
-        });
-        toast({
-          title: "Success",
-          description: "Drug added successfully",
-        });
+        // setFormData({
+        //   drugName: "",
+        //   potency: "",
+        //   brandName: "",
+        //   quantity: 0,
+        //   ml: 0,
+        //   drawerNumber: "",
+        //   description: "",
+        // });
+        toast.dismiss();
+        toast.success("Drug added successfully");
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add drug",
-        variant: "destructive",
-      });
+      toast.dismiss();
+      toast.error("Failed to add drug");
     }
   };
 
@@ -217,6 +254,19 @@ const DrugList = () => {
     setIsEditDialogOpen(true);
   };
 
+  useEffect(() => {
+    if (isEditDialogOpen) return;
+    setFormData({
+      drugName: "",
+      potency: "",
+      brandName: "",
+      quantity: 0,
+      ml: 0,
+      drawerNumber: "",
+      description: "",
+    });
+  }, [isEditDialogOpen]);
+
   // Edit drug
   const handleEditDrug = async () => {
     if (!validateForm()) return;
@@ -226,31 +276,26 @@ const DrugList = () => {
         `${BASE_URL}${commonUrl.drugList.updateOne}/${currentDrug?._id}`,
         formData
       );
-
-      if (response.data.success) {
+      const result = response?.data?.responseData;
+      if (result?.success) {
         fetchDrugs();
         setIsEditDialogOpen(false);
         setCurrentDrug(null);
-        setFormData({
-          drugName: "",
-          potency: "",
-          brandName: "",
-          quantity: 0,
-          ml: 0,
-          drawerNumber: "",
-          description: "",
-        });
-        toast({
-          title: "Success",
-          description: "Drug updated successfully",
-        });
+        // setFormData({
+        //   drugName: "",
+        //   potency: "",
+        //   brandName: "",
+        //   quantity: 0,
+        //   ml: 0,
+        //   drawerNumber: "",
+        //   description: "",
+        // });
+        toast.dismiss();
+        toast.success("Drug updated successfully");
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update drug",
-        variant: "destructive",
-      });
+      toast.dismiss();
+      toast.error("Failed to update drug");
     }
   };
 
@@ -262,19 +307,16 @@ const DrugList = () => {
           `${BASE_URL}${commonUrl.drugList.deleteOne}/${id}`
         );
 
-        if (response.data.success) {
+        const result = response?.data?.responseData;
+
+        if (result?.success) {
           fetchDrugs();
-          toast({
-            title: "Success",
-            description: "Drug deleted successfully",
-          });
+          toast.dismiss();
+          toast.success("Drug deleted successfully");
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete drug",
-          variant: "destructive",
-        });
+        toast.dismiss();
+        toast.error("Failed to delete drug");
       }
     }
   };
@@ -291,132 +333,139 @@ const DrugList = () => {
           { ...drug, quantity: newQuantity }
         );
 
-        if (response.data.success) {
+        const result = response?.data?.responseData;
+        if (result?.success) {
           fetchDrugs();
-          toast({
-            title: "Success",
-            description: `Quantity ${
-              increment ? "increased" : "decreased"
-            } successfully`,
-          });
+          toast.dismiss();
+          toast.success(
+            `Quantity ${increment ? "increased" : "decreased"} successfully`
+          );
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update quantity",
-          variant: "destructive",
-        });
+        toast.error("Failed to update quantity");
       }
     }
   };
 
   // Filter drugs based on search query
-  const filteredDrugs = drugs.filter(
+  const filteredDrugs = drugs?.filter(
     (drug) =>
-      drug.drugName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      drug.brandName.toLowerCase().includes(searchQuery.toLowerCase())
+      drug.drugName.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      drug.brandName.toLowerCase().includes(searchQuery?.toLowerCase())
   );
 
-  useEffect(() => {
-    console.log("Current Drug:", currentDrug);
-    console.log("Form Data:", formData);
-    console.log("Errors:", errors);
-  }, [formData, errors, currentDrug]);
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <Input
-          type="text"
-          placeholder="Search by drug name or brand..."
-          className="max-w-sm"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add New Drug
-            </Button>
-          </DialogTrigger>
+    <>
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-4">
+          <Input
+            type="text"
+            placeholder="Search by drug name or brand..."
+            className="max-w-sm focus:outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add New Drug
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New Drug</DialogTitle>
+              </DialogHeader>
+              <FormFields
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+              />
+              <Button onClick={handleAddDrug}>Add Drug</Button>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>No.</TableHead>
+              <TableHead>Drug Name</TableHead>
+              <TableHead>Brand Name</TableHead>
+              <TableHead>Potency</TableHead>
+              <TableHead>ML</TableHead>
+              <TableHead>Drawer</TableHead>
+              <TableHead>Edit</TableHead>
+              <TableHead>Add</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Remove</TableHead>
+              <TableHead>Delete</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredDrugs?.length ? (
+              filteredDrugs.map((row, index) => (
+                <TableRow
+                  key={row._id}
+                  className={decideDrugRowBgColor(row.quantity)}
+                >
+                  <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableCell>{row.drugName}</TableCell>
+                  <TableCell>{row.brandName}</TableCell>
+                  <TableCell>{row.potency}</TableCell>
+                  <TableCell>{row.ml}</TableCell>
+                  <TableCell>{row.drawerNumber}</TableCell>
+                  <TableCell
+                    className="cursor-pointer hover:bg-muted/100"
+                    onClick={() => handleEditClick(row)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </TableCell>
+                  <TableCell
+                    className="cursor-pointer hover:bg-muted/100"
+                    onClick={() => handleUpdateQuantity(row._id, true)}
+                  >
+                    <CirclePlus className="h-4 w-4" />
+                  </TableCell>
+                  <TableCell>{row.quantity}</TableCell>
+                  <TableCell
+                    className="cursor-pointer hover:bg-muted/100"
+                    onClick={() => handleUpdateQuantity(row._id, false)}
+                  >
+                    <CircleMinus className="h-4 w-4" />
+                  </TableCell>
+                  <TableCell
+                    className="cursor-pointer hover:bg-muted/100"
+                    onClick={() => handleDeleteDrug(row._id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={100} className="text-center p-[30px]">
+                  No drugs found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Add New Drug</DialogTitle>
+              <DialogTitle>Edit Drug</DialogTitle>
             </DialogHeader>
             <FormFields
               formData={formData}
               setFormData={setFormData}
               errors={errors}
             />
-            <Button onClick={handleAddDrug}>Add Drug</Button>
+            <Button onClick={handleEditDrug}>Save Changes</Button>
           </DialogContent>
         </Dialog>
       </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>No.</TableHead>
-            <TableHead>Drug Name</TableHead>
-            <TableHead>Brand Name</TableHead>
-            <TableHead>Potency</TableHead>
-            <TableHead>ML</TableHead>
-            <TableHead>Drawer</TableHead>
-            <TableHead>Edit</TableHead>
-            <TableHead>Add</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Remove</TableHead>
-            <TableHead>Delete</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredDrugs.map((row, index) => (
-            <TableRow key={row._id}>
-              <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{row.drugName}</TableCell>
-              <TableCell>{row.brandName}</TableCell>
-              <TableCell>{row.potency}</TableCell>
-              <TableCell>{row.ml}</TableCell>
-              <TableCell>{row.drawerNumber}</TableCell>
-              <TableCell
-                className="cursor-pointer hover:bg-muted/100"
-                onClick={() => handleEditClick(row)}
-              >
-                <Edit className="h-4 w-4" />
-              </TableCell>
-              <TableCell
-                className="cursor-pointer hover:bg-muted/100"
-                onClick={() => handleUpdateQuantity(row._id, true)}
-              >
-                <CirclePlus className="h-4 w-4" />
-              </TableCell>
-              <TableCell>{row.quantity}</TableCell>
-              <TableCell
-                className="cursor-pointer hover:bg-muted/100"
-                onClick={() => handleUpdateQuantity(row._id, false)}
-              >
-                <CircleMinus className="h-4 w-4" />
-              </TableCell>
-              <TableCell
-                className="cursor-pointer hover:bg-muted/100"
-                onClick={() => handleDeleteDrug(row._id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Drug</DialogTitle>
-          </DialogHeader>
-          <FormFields />
-          <Button onClick={handleEditDrug}>Save Changes</Button>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </>
   );
 };
 
