@@ -1,5 +1,6 @@
 import express from "express";
 import patientRouter from "./routes/patientRoutes.js";
+import drugListRouter from "./routes/drugListRoutes.js";
 
 const router = express.Router();
 
@@ -12,4 +13,6 @@ router.get("/test", (req, res) => {
 });
 
 router.use("/patients", patientRouter);
+router.use("/drugs", drugListRouter);
+
 export default router;
