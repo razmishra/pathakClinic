@@ -55,7 +55,7 @@ patientRouter.patch("/delete-one/:caseId", async (req, res) => {
     });
 });
 
-patientRouter.post("/upload", upload.array("files"), async (req, res) => {
+patientRouter.post("/upload", upload.single("files"), async (req, res) => {
   try {
     return PatientFunction.uploadFiles(req, res)
       .then((result) => {

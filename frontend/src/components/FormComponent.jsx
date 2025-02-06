@@ -24,30 +24,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-
+import {Plus } from "lucide-react";
 const FormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  age: z.number().min(0, {
-    message: "Age must be a positive number.",
-  }),
-  gender: z.enum(["male", "female", "other"], {
-    message: "Gender must be one of Male, Female, or Other.",
-  }),
-  address: z.string().min(5, {
-    message: "Address must be at least 5 characters.",
-  }),
-  occupation: z.string().min(1, { message: "Occupation is required." }),
-  contact: z.preprocess(
-    (val) => String(val), // Preprocess the value to ensure it's a string
-    z
-      .string()
-      .length(10, { message: "Contact number must be exactly 10 digits." })
-      .transform((val) => Number(val)) // process it back to number
-  ),
-  images: z.array(z.instanceof(File)).min(1, {
-    message: "At least one image is required.",
+  // name: z.string().min(2, {
+  //   message: "Name must be at least 2 characters.",
+  // }),
+  // age: z.number().min(0, {
+  //   message: "Age must be a positive number.",
+  // }),
+  // gender: z.enum(["male", "female", "other"], {
+  //   message: "Gender must be one of Male, Female, or Other.",
+  // }),
+  // address: z.string().min(5, {
+  //   message: "Address must be at least 5 characters.",
+  // }),
+  // occupation: z.string().min(1, { message: "Occupation is required." }),
+  // contact: z.preprocess(
+  //   (val) => String(val), // Preprocess the value to ensure it's a string
+  //   z
+  //     .string()
+  //     .length(10, { message: "Contact number must be exactly 10 digits." })
+  //     .transform((val) => Number(val)) // process it back to number
+  // ),
+  image: z.instanceof(File).refine((file) => file.size <= 5 * 1024 * 1024, {
+    message: "Image must be less than 5MB",
   }),
 });
 
@@ -240,16 +240,17 @@ const FormComponent = () => {
               <FormControl>
                 <Controller
                   control={form.control}
-                  name="images"
+                  name="image"
                   render={({ field: { onChange, value } }) => (
                     <Input
                       type="file"
-                      multiple // Allows multiple files to be selected
+                      // multiple // Allows multiple files to be selected
                       accept="image/*" // Optional: restrict file types to images
                       onChange={(e) => {
-                        const files = e.target.files;
-                        if (files) {
-                          onChange(Array.from(files)); // Convert FileList to an array
+                        const file = e.target.files[0];
+                        console.log(file)
+                        if (file) {
+                          onChange(file); // Convert FileList to an array
                         }
                       }}
                       value={undefined} // Prevent React warning about controlled input
@@ -257,7 +258,7 @@ const FormComponent = () => {
                   )}
                 />
               </FormControl>
-              <FormDescription>Select single or  multiple images.</FormDescription>
+              <FormDescription>Select single image.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
