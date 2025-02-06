@@ -1,9 +1,7 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-
+import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import {
   Select,
   SelectContent,
@@ -24,37 +21,113 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
+
+// Modified schema to handle multiple images
 const FormSchema = z.object({
-  // name: z.string().min(2, {
-  //   message: "Name must be at least 2 characters.",
-  // }),
-  // age: z.number().min(0, {
-  //   message: "Age must be a positive number.",
-  // }),
-  // gender: z.enum(["male", "female", "other"], {
-  //   message: "Gender must be one of Male, Female, or Other.",
-  // }),
-  // address: z.string().min(5, {
-  //   message: "Address must be at least 5 characters.",
-  // }),
-  // occupation: z.string().min(1, { message: "Occupation is required." }),
-  // contact: z.preprocess(
-  //   (val) => String(val), // Preprocess the value to ensure it's a string
-  //   z
-  //     .string()
-  //     .length(10, { message: "Contact number must be exactly 10 digits." })
-  //     .transform((val) => Number(val)) // process it back to number
-  // ),
-  image: z.instanceof(File).refine((file) => file.size <= 5 * 1024 * 1024, {
-    message: "Image must be less than 5MB",
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
   }),
+  age: z.number().min(0, {
+    message: "Age must be a positive number.",
+  }),
+  gender: z.enum(["male", "female", "other"], {
+    message: "Gender must be one of Male, Female, or Other.",
+  }),
+  address: z.string().min(5, {
+    message: "Address must be at least 5 characters.",
+  }),
+  occupation: z.string().min(1, { message: "Occupation is required." }),
+  contact: z.preprocess(
+    (val) => String(val),
+    z
+      .string()
+      .length(10, { message: "Contact number must be exactly 10 digits." })
+      .transform((val) => Number(val))
+  ),
+  images: z
+    .array(
+      z.instanceof(File).refine(
+        (file) => file.size <= 5 * 1024 * 1024,
+        (file) => ({
+          message: `${file.name} must be less than 5MB`,
+        })
+      )
+    )
+    .min(1, "At least one image is required")
+    .max(5, "Maximum 5 images allowed"),
 });
 
 const FormComponent = () => {
+  const [imagePreview, setImagePreview] = useState([]);
+
   const form = useForm({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      images: [],
+    },
   });
+
+  const handleImageChange = (e, onChange) => {
+    const files = Array.from(e.target.files);
+    const currentImages = form.getValues("images") || [];
+
+    if (currentImages.length + files.length > 5) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Maximum 5 images allowed",
+      });
+      return;
+    }
+
+    // Validate file size and type
+    const validFiles = files.filter((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: `${file.name} is too large. Maximum size is 5MB`,
+        });
+        return false;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: `${file.name} is not an image`,
+        });
+        return false;
+      }
+      return true;
+    });
+
+    // Update form and preview
+    const newImages = [...currentImages, ...validFiles];
+    onChange(newImages);
+
+    // Generate previews
+    validFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview((prev) => [
+          ...prev,
+          {
+            url: reader.result,
+            name: file.name,
+          },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    const currentImages = form.getValues("images");
+    const newImages = currentImages.filter((_, i) => i !== index);
+    form.setValue("images", newImages);
+    setImagePreview((prev) => prev.filter((_, i) => i !== index));
+  };
 
   function onSubmit(data) {
     console.log(data);
@@ -62,7 +135,16 @@ const FormComponent = () => {
       title: "You submitted the following values:",
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          <code className="text-white">
+            {JSON.stringify(
+              {
+                ...data,
+                images: data.images.map((img) => img.name),
+              },
+              null,
+              2
+            )}
+          </code>
         </pre>
       ),
     });
@@ -238,27 +320,52 @@ const FormComponent = () => {
             <FormItem>
               <FormLabel>Images</FormLabel>
               <FormControl>
-                <Controller
-                  control={form.control}
-                  name="image"
-                  render={({ field: { onChange, value } }) => (
-                    <Input
-                      type="file"
-                      // multiple // Allows multiple files to be selected
-                      accept="image/*" // Optional: restrict file types to images
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        console.log(file)
-                        if (file) {
-                          onChange(file); // Convert FileList to an array
-                        }
-                      }}
-                      value={undefined} // Prevent React warning about controlled input
-                    />
-                  )}
-                />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {imagePreview.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image.url}
+                          alt={`Preview ${index}`}
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 rounded-full p-1 
+                                   opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                    {imagePreview.length < 5 && (
+                      <label
+                        className="flex items-center justify-center w-full h-32 
+                                      border-2 border-dashed rounded-lg cursor-pointer
+                                      hover:border-gray-400 transition-colors"
+                      >
+                        <div className="flex flex-col items-center">
+                          <Plus className="h-8 w-8 text-gray-400" />
+                          <span className="text-sm text-gray-500">
+                            Add Image
+                          </span>
+                        </div>
+                        <Input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => handleImageChange(e, field.onChange)}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
               </FormControl>
-              <FormDescription>Select single image.</FormDescription>
+              <FormDescription>
+                Upload up to 5 images (max 5MB each)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

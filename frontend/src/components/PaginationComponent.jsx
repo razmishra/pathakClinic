@@ -28,8 +28,8 @@ const PaginationComponent = (props) => {
               <SelectValue placeholder="10" />
             </SelectTrigger>
             <SelectContent className="w-5">
-              {pageOptions?.map((page) => (
-                <SelectItem value={page}>{page}</SelectItem>
+              {pageOptions?.map((page, index) => (
+                <SelectItem key={index} value={page}>{page}</SelectItem>
               ))}
             </SelectContent>
           </Select>
