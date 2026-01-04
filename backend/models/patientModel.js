@@ -23,18 +23,29 @@ const patientSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    dateOfBirth: {
-      type: Date,
-      required: true,
-    },
     gender: {
       type: String,
       required: true,
     },
-    fileName: {
-      type: Array,
+    occupation: {
+      type: String,
+      // required: true,
     },
+    fileName: [
+      {
+        fileName: String, // Stored filename
+        originalName: String, // Original file name
+        path: String, // Path to access file
+        mimeType: String, // File type
+        size: Number, // File size in bytes
+        uploadDate: Date, // Upload timestamp
+      },
+    ],
     isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    showOnDashboard: {
       type: Boolean,
       default: false,
     },
@@ -44,18 +55,5 @@ const patientSchema = new mongoose.Schema(
   }
 );
 
-patientSchema.pre("validate", async function (next) {
-  // Check if the document is new
-  if (this.isNew) {
-    // Find the last patient document sorted by caseId in descending order
-    const lastPatient = await this.constructor.findOne().sort({ caseId: -1 });
-
-    // If a last patient exists, set the new caseId to be one more than the last caseId
-    // Otherwise, set the caseId to 1 (for the first patient)
-    this.caseId = lastPatient ? lastPatient.caseId + 1 : 1;
-  }
-  // Proceed to the next middleware or save operation
-  next();
-});
 const patientsModel = mongoose.model("patientsModel", patientSchema);
 export default patientsModel;

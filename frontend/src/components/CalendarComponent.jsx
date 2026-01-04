@@ -19,29 +19,29 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useEffect } from "react";
 
 const FormSchema = z.object({
   queueDate: z.date({
-    required_error: "A date of birth is required.",
+    required_error: "A date is required.",
   }),
 });
 
-const CalendarComponent = () => {
+const CalendarComponent = (props) => {
+  const { selectedDate, setSelectedDate } = props;
   const form = useForm({
     resolver: zodResolver(FormSchema),
   });
 
   function onSubmit(data) {
-    // toast({
-    //   title: "You submitted the following values:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // });
-    console.log(data);
+    setSelectedDate(data?.queueDate);
   }
+
+  useEffect(() => {
+    if (!selectedDate) {
+      form.reset();
+    }
+  }, [selectedDate]);
 
   return (
     <Form {...form}>
@@ -81,9 +81,6 @@ const CalendarComponent = () => {
                         onSubmit({ queueDate: date });
                       }
                     }}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
                     initialFocus
                   />
                 </PopoverContent>

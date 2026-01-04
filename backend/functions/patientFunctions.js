@@ -8,8 +8,7 @@ import {
 
 const addPatient = async (req, res) => {
   try {
-    const { caseId, name, age, gender, contact, address, dateOfBirth } =
-      req.body;
+    const { caseId, name, age, gender, contact, address } = req.body;
     // Validation rules
     const validations = [
       // { field: caseId, name: "Case ID" },
@@ -18,11 +17,11 @@ const addPatient = async (req, res) => {
       { field: gender, name: "Gender" },
       { field: contact, name: "Contact", custom: validateContact(contact) },
       { field: address, name: "Address" },
-      {
-        field: dateOfBirth,
-        name: "Date of birth",
-        custom: validateDateOfBirth(dateOfBirth),
-      },
+      // {
+      //   field: dateOfBirth,
+      //   name: "Date of birth",
+      //   custom: validateDateOfBirth(dateOfBirth),
+      // },
     ];
 
     // Perform validations
@@ -39,10 +38,13 @@ const addPatient = async (req, res) => {
       isDeleted: false,
     });
     if (existingPatient) {
-      return {
-        success: false,
-        message: "Patient with this case ID already exists",
-      };
+      const result = await generateCaseId(req, res);
+      const caseId = result?.data?.caseId;
+      req.body.caseId = caseId;
+      // return {
+      //   success: false,
+      //   message: "Patient with this case ID already exists",
+      // };
     }
 
     // TO DO: implement patient addition logic
@@ -88,7 +90,7 @@ const getAllPatient = async (req, res) => {
     return patientController
       .getAllPatients(req, res)
       .then((data) => {
-        return { message: "Patients fetched succefully", data };
+        return { success: true, message: "Patients fetched succefully", data };
       })
       .catch((error) => {
         throw { errorMessage: error };
@@ -153,27 +155,83 @@ const deletePatient = async (req, res) => {
   }
 };
 
+const generateCaseId = async (req, res) => {
+  try {
+    let caseId = 0;
+    const patient = await patientsModel
+      .findOne({ isDeleted: false })
+      .sort({ caseId: -1 });
+    if (!patient) {
+      return { success: false, message: 1 };
+    } else {
+      caseId += Number(patient?.caseId || 0) + 1;
+    }
+
+    return {
+      success: true,
+      message: "Case ID generated successfully",
+      data: { caseId },
+    };
+  } catch (err) {
+    console.error(err, "error in generateCaseId");
+    throw err;
+  }
+};
+
 const uploadFiles = async (req, res) => {
   try {
     const patientId = req.body.patientId;
-    const files = req.files.map((file) => file.filename);
-    if (!files.length) {
-      return { success: false, message: "No file choosen" };
+    console.log(patientId, " patient id");
+
+    if (!req.files || req.files.length === 0) {
+      return { success: false, message: "No files chosen" };
     }
 
     const patient = await patientsModel.findById(patientId);
-
     if (!patient) {
       return { success: false, message: "Patient not found" };
     }
 
-    patient.fileName = patient.fileName.concat(files);
+    // Create file metadata array
+    const fileMetadata = req.files.map((file) => ({
+      fileName: file.filename,
+      originalName: file.originalname,
+      path: `/uploads/${file.filename}`,
+      mimeType: file.mimetype,
+      size: file.size,
+      uploadDate: new Date(),
+    }));
+
+    // Add new files to existing files array
+    patient.fileName = patient.fileName || [];
+    patient.fileName = patient.fileName.concat(fileMetadata);
+
     await patient.save();
 
-    return responseHandler.sendSuccess(res, patient, req);
+    return {
+      success: true,
+      message: "Files uploaded successfully",
+      data: patient,
+    };
   } catch (error) {
-    console.log(error);
-    return responseHandler.sendError(res, error, req);
+    console.error("File upload error:", error.message);
+    throw error;
+  }
+};
+
+const dashboardRecord = async (req, res) => {
+  try {
+    return patientController
+      .dashboardRecord(req, res)
+      .then((data) => {
+        return { success: true, message: "Dashboard records fetched succefully", data };
+      })
+      .catch((error) => {
+        throw { errorMessage: error };
+      });
+  } catch (error) {
+    console.error(error, "error in fetching dashboard record");
+    throw error;
   }
 };
 
@@ -183,5 +241,7 @@ export default {
   getAllPatient,
   updatePatient,
   deletePatient,
+  generateCaseId,
   uploadFiles,
+  dashboardRecord,
 };

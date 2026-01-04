@@ -3,15 +3,36 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const DashboardCard = (props) => {
-  const { cardTitle, cardImage: CardImage, cardDescription } = props;
-  const borderColors = ["red", "blue", "green", "orange", "purple", "pink", "black"];
+  const {
+    cardTitle,
+    cardImage: CardImage,
+    cardDescription,
+    totalPatients,
+    totalExaminations,
+    todaysNewPatients,
+    todaysNewExaminations,
+  } = props;
+  const borderColors = [
+    "red",
+    "blue",
+    "green",
+    "orange",
+    "purple",
+    "pink",
+    "black",
+  ];
   const borderColor =
     borderColors[Math.floor(Math.random() * borderColors.length)];
 
   return (
     <Card
       className="w-full flex items-center justify-around hover:shadow-lg border-l-2"
-      style={{ borderColor, borderTop: 'none', borderRight: 'none', borderBottom: 'none' }}
+      style={{
+        borderColor,
+        borderTop: "none",
+        borderRight: "none",
+        borderBottom: "none",
+      }}
     >
       <div>
         <CardHeader>
@@ -24,4 +45,4 @@ const DashboardCard = (props) => {
   );
 };
 
-export default DashboardCard;
+export default React.memo(DashboardCard);

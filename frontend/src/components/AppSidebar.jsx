@@ -59,7 +59,7 @@ export function AppSidebar({ isOpen, setIsOpen, toggleSidebar }) {
 
   const handleMenuClick = (item) => {
     navigate(item.url);
-    onOpenChange(false);
+    // onOpenChange(false);
   };
   
   return (
@@ -67,7 +67,7 @@ export function AppSidebar({ isOpen, setIsOpen, toggleSidebar }) {
       <SidebarContent>
         <SidebarHeader>
           <header className="flex items-center justify-start gap-6">
-            <img src="doctor-icon.svg" alt="icon" className="w-10" />
+            <img src="doctor.png" alt="icon" className="w-12" />
             <span className="font-bold text-2xl">Dr. Pathak</span>
           </header>
         </SidebarHeader>

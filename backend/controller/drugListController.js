@@ -3,7 +3,6 @@ import drugListModel from "../models/drugModel.js";
 const getAllDrugs = async (req, res) => {
   try {
     const drugs = await drugListModel.find({isDeleted: false});
-    console.log(drugs);
 
     return drugs;
   } catch (error) {

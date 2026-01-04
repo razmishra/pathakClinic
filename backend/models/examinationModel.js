@@ -1,44 +1,71 @@
 import mongoose from "mongoose";
 
-const patientExaminationSchema = new mongoose.Schema({
-  CaseId: {
-    type: Number,
-    required: true,
+const prescriptionSchema = new mongoose.Schema(
+  {
+    date: {
+      type: String,
+      required: true,
+    },
+    symptoms: {
+      type: String,
+      default: "",
+    },
+    prescription: {
+      type: String,
+      default: "",
+    },
   },
-  dateOfExamination: {
-    type: Date,
-    required: true,
+  { _id: true }
+);
+
+const patientExaminationSchema = new mongoose.Schema(
+  {
+    patientName: {
+      type: String,
+      required: [true, "Patient name is required"],
+      trim: true,
+    },
+    date: {
+      type: String,
+      required: true,
+    },
+    caseId: {
+      type: String,
+      required: [true, "Case ID is required"],
+      unique: true,
+      trim: true,
+    },
+    contact: {
+      type: String,
+      trim: true,
+    },
+    occupation: {
+      type: String,
+      trim: true,
+    },
+    chiefComplaints: {
+      type: String,
+      default: "",
+    },
+    kco: {
+      type: String,
+      default: "",
+    },
+    diagnosis: {
+      type: String,
+      default: "",
+    },
+    prescriptions: {
+      type: [prescriptionSchema],
+      default: [],
+    },
   },
-  doctorName: {
-    type: String,
-    required: true,
-  },
-  diagnosis: {
-    type: String,
-    required: true,
-  },
-  treatmentPlan: {
-    type: String,
-    required: true,
-  },
-  prescribedMedications: {
-    type: String,
-    required: true,
-  },
-  prescribedTests: {
-    type: String,
-    required: true,
-  },
-  prescribedProcedures: {
-    type: String,
-    required: true,
-  },
-  prescribedSurgeries: {
-    type: String,
-    required: true,
-  },
-  prescribedLabTests: {
-    type: String,
-    required: true,
-  },
-});
+  { timestamps: true }
+);
+
+const PatientExamination = mongoose.model(
+  "PatientExamination",
+  patientExaminationSchema
+);
+
+export default PatientExamination;

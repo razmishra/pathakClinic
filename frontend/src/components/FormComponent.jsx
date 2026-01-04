@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Plus, X } from "lucide-react";
+import axios from "axios";
+import { BASE_URL, commonUrl } from "@/utils/commonUrl";
 
 // Modified schema to handle multiple images
 const FormSchema = z.object({
@@ -48,25 +50,56 @@ const FormSchema = z.object({
   images: z
     .array(
       z.instanceof(File).refine(
-        (file) => file.size <= 5 * 1024 * 1024,
+        (file) => file.size <= 35 * 1024 * 1024,
         (file) => ({
-          message: `${file.name} must be less than 5MB`,
+          message: `${file.name} must be less than 35MB`,
         })
       )
     )
-    .min(1, "At least one image is required")
     .max(5, "Maximum 5 images allowed"),
 });
 
 const FormComponent = () => {
   const [imagePreview, setImagePreview] = useState([]);
-
+  const [caseId, setCaseId] = useState(null);
+  const mounted = useRef(false);
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      "case-id": caseId,
       images: [],
     },
   });
+
+  useEffect(() => {
+    if (caseId) {
+      form.reset({ "case-id": caseId, images: [] });
+    }
+  }, [caseId, form]);
+
+  const fetchNewCaseId = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}${commonUrl.Patients.generateCaseId}`
+      );
+      const result = response?.data?.responseData;
+      if (!result?.success) {
+        toast.error(result?.message || "error creating case id");
+        return;
+      }
+      setCaseId(result?.data?.caseId);
+    } catch (error) {
+      console.log(error?.message);
+      toast.error(error?.message || "error creating case id");
+    }
+  };
+
+  useEffect(() => {
+    if (!mounted.current) {
+      fetchNewCaseId();
+      mounted.current = true;
+    }
+  }, []);
 
   const handleImageChange = (e, onChange) => {
     const files = Array.from(e.target.files);
@@ -84,19 +117,11 @@ const FormComponent = () => {
     // Validate file size and type
     const validFiles = files.filter((file) => {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: `${file.name} is too large. Maximum size is 5MB`,
-        });
+        toast.error(`${file.name} is too large. Maximum size is 5MB`);
         return false;
       }
       if (!file.type.startsWith("image/")) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: `${file.name} is not an image`,
-        });
+        toast.error(`${file.name} is not an image`);
         return false;
       }
       return true;
@@ -129,25 +154,69 @@ const FormComponent = () => {
     setImagePreview((prev) => prev.filter((_, i) => i !== index));
   };
 
-  function onSubmit(data) {
-    console.log(data);
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(
-              {
-                ...data,
-                images: data.images.map((img) => img.name),
+  async function onSubmit(data) {
+    try {
+      // First, create the patient record
+      const patientData = { ...data, caseId };
+
+      delete patientData.images;
+
+      const patientResponse = await axios.post(
+        `${BASE_URL}${commonUrl.Patients.addOne}`,
+        patientData
+      );
+
+      if (patientResponse.data?.responseData?.success) {
+        // If patient creation successful, check if there are images to upload
+        if (data.images && data.images.length > 0) {
+          const formData = new FormData();
+          formData.append(
+            "patientId",
+            patientResponse?.data?.responseData?.data?._id
+          );
+
+          data.images.forEach((file) => {
+            formData.append("files", file);
+          });
+
+          const uploadResponse = await axios.post(
+            `${BASE_URL}${commonUrl.images.upload}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
               },
-              null,
-              2
-            )}
-          </code>
-        </pre>
-      ),
-    });
+            }
+          );
+
+          if (!uploadResponse.data?.responseData?.success) {
+            toast.error(
+              uploadResponse.data?.responseData?.message || "Image upload failed"
+            );
+          }
+        }
+
+        toast.success("Patient added successfully");
+        form.reset({
+          name: "",
+          age: "",
+          gender: undefined,
+          address: "",
+          occupation: "",
+          contact: "",
+          images: [],
+        });
+        setImagePreview([]);
+        fetchNewCaseId();
+      } else {
+        toast.error(
+          patientResponse.data?.responseData?.message || "Something went wrong"
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Could not add patient");
+    }
   }
 
   return (
@@ -178,7 +247,12 @@ const FormComponent = () => {
               <FormItem>
                 <FormLabel>Case Id</FormLabel>
                 <FormControl>
-                  <Input placeholder="pathak" {...field} value="123" disabled />
+                  <Input
+                    placeholder="caseId"
+                    {...field}
+                    value={field.value}
+                    disabled
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -235,7 +309,11 @@ const FormComponent = () => {
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Gender" />
+                      {field.value ? (
+                        <SelectValue placeholder="Select Gender" />
+                      ) : (
+                        "Select Gender"
+                      )}
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
