@@ -12,6 +12,7 @@ export default defineConfig({
   server: {
     open: true,
     port: 3000,
-    hmr:true,
+    host: "0.0.0.0", // Allow access from other machines on the network
+    hmr: true,
   },
 });

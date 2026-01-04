@@ -34,10 +34,10 @@ const decideActionButton = (action) => {
 
 export function TableComponent(props) {
   const {
-    tableRows,
-    setTableRows,
-    tableColumns,
-    selectedRows,
+    tableRows=[],
+    setTableRows=[],
+    tableColumns=[],
+    selectedRows=[],
     setSelectedRows,
   } = props;
 

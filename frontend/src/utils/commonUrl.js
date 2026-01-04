@@ -1,18 +1,12 @@
-import Examination from "@/pages/examination";
-
-// let BASE_URL = "http://localhost:5000";
-let BASE_URL = `${window.location.hostname}:5000`;
-const ws = new WebSocket(`${window.location.hostname}:8080`);
-
-ws.onmessage = (event) => {
-  console.log("WebSocket message received");
-  console.log(event.data,"message from server");
-  const data = JSON.parse(event.data);
-  if (data.localIP) {
-    console.log(data.localIP," --local ip from ws");
-    BASE_URL = `http://${data.localIP}:5000`;
-  }
+// Dynamically determine the backend URL based on the current browser location
+// This way, if user accesses http://192.168.1.5:3000, API calls go to http://192.168.1.5:5000
+// If user accesses http://localhost:3000, API calls go to http://localhost:5000
+const getBaseUrl = () => {
+  const hostname = window.location.hostname;
+  return `http://${hostname}:5000`;
 };
+
+const BASE_URL = getBaseUrl();
 
 export { BASE_URL };
 

@@ -34,7 +34,7 @@ Object.keys(networkInterfaces).forEach((interfaceName) => {
   }
 });
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 8080, host: "0.0.0.0" });
 
 wss.on("connection", (ws) => {
   ws.send(JSON.stringify({ localIP }));
