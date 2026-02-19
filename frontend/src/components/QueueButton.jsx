@@ -47,7 +47,6 @@ const QueueButton = ({ appointmentId, showOnDashboard }) => {
       );
       const result = response?.data?.responseData;
       if (result?.success) {
-        console.log("Queue status updated successfully");
         toast.dismiss();
         toast.success("Queue status updated successfully");
       }

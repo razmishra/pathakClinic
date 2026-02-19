@@ -62,9 +62,7 @@ const Examination = () => {
         `${BASE_URL}${commonUrl.Examination.getOne}/${caseId}`
       );
       const result = response?.data?.responseData?.data;
-      console.log(result);
       const data = { ...result?.patientDetails, ...result?.examinationDetails };
-      console.log(data);
       if (data) {
         // Prefill the form with retrieved data
         setFormData({

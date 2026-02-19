@@ -141,7 +141,6 @@ const Appointments = () => {
       date: selectedDate,
     });
   };
-  console.log(selectedDate," --selectedDate");
   
   // AppointmentCard component for grid view
   const AppointmentCard = ({ appointment }) => {

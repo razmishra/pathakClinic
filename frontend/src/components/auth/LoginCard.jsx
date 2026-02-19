@@ -57,9 +57,7 @@ const LoginCard = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values) {
-    console.log(values);
     const { role, password } = values;
-    console.log(role, password);
     if (password === loginConstants.PASSWORD) {
       localStorage.setItem("loggedIn", true);
       navigate("/dashboard");

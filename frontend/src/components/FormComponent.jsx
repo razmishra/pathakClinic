@@ -89,7 +89,6 @@ const FormComponent = () => {
       }
       setCaseId(result?.data?.caseId);
     } catch (error) {
-      console.log(error?.message);
       toast.error(error?.message || "error creating case id");
     }
   };

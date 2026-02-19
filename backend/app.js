@@ -20,14 +20,12 @@ connectDb();
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 const networkInterfaces = os.networkInterfaces();
 let localIP;
-console.log(networkInterfaces,"--networkInterfaces")
 // Find your machine's local IP dynamically
 Object.keys(networkInterfaces).forEach((interfaceName) => {
   const interfaces = networkInterfaces[interfaceName];
   for (const iface of interfaces) {
     // Skip over non-IPv4 and internal (localhost) interfaces
     if (iface.family === "IPv4" && !iface.internal) {
-      console.log(iface.address," --found local ip");
       localIP = iface.address;
       break;
     }

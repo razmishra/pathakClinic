@@ -161,11 +161,8 @@ const generateCaseId = async (req, res) => {
     const patient = await patientsModel
       .findOne({ isDeleted: false })
       .sort({ caseId: -1 });
-    if (!patient) {
-      return { success: false, message: 1 };
-    } else {
-      caseId += Number(patient?.caseId || 0) + 1;
-    }
+    
+    caseId += Number(patient?.caseId || 0) + 1;
 
     return {
       success: true,
