@@ -1,0 +1,37 @@
+============================================
+  PATHAK CLINIC - HOW TO START THE APP
+============================================
+
+Before first use:
+-----------------
+1. Install Node.js (LTS) from https://nodejs.org
+   - Download and run the installer
+   - Restart your computer if asked
+
+2. Install MongoDB and make sure it is running
+   - Backend uses MongoDB on your computer (localhost)
+   - If you don't have MongoDB, install from https://www.mongodb.com/try/download/community
+
+How to start the application:
+------------------------------
+
+WINDOWS:
+  Double-click:  "Start Pathak Clinic.bat"
+  - First time may take a few minutes (installing dependencies)
+  - A black window will open; keep it open while you use the app
+  - When you see "Local: http://localhost:3000", open your browser and go to:
+    http://localhost:3000
+
+MAC / LINUX:
+  Double-click "start.sh" (or right-click → Open)
+  OR open Terminal, go to this folder and run:  ./start.sh
+  - First time may take a few minutes (installing dependencies)
+  - When you see "Local: http://localhost:3000", open your browser and go to:
+    http://localhost:3000
+
+To stop the application:
+  Close the terminal/command window, or press Ctrl+C in that window.
+
+============================================
+  Need help? Keep this file for reference.
+============================================

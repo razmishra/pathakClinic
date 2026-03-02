@@ -1,0 +1,13 @@
+{
+  "name": "pathak-clinic",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pathak Clinic - Start frontend and backend together",
+  "scripts": {
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "start": "concurrently -k -n \"backend,frontend\" -c \"blue,green\" \"npm run start --prefix backend\" \"npm run dev --prefix frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
