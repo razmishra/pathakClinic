@@ -105,11 +105,7 @@ const FormComponent = () => {
     const currentImages = form.getValues("images") || [];
 
     if (currentImages.length + files.length > 5) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Maximum 5 images allowed",
-      });
+      toast.error("You can only upload a maximum of 5 images");
       return;
     }
 
