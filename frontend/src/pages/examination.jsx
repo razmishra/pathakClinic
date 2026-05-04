@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar, PlusCircle, Trash2 } from "lucide-react";
 import moment from "moment";
 import toast from "react-hot-toast";
@@ -14,6 +15,9 @@ const Examination = () => {
   const today = moment().format("DD-MM-YYYY");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     patientName: "",
@@ -51,6 +55,7 @@ const Examination = () => {
         },
       ],
     });
+    setImages([]);
   };
 
   const fetchExaminationDetails = async (caseId) => {
@@ -82,6 +87,7 @@ const Examination = () => {
               }))
             : [{ date: today, symptoms: "", prescription: "" }],
         });
+        setImages(data.fileName || []);
       }
     } catch (error) {
       console.error("Failed to fetch examination details:", error);
@@ -94,6 +100,9 @@ const Examination = () => {
   const handleCaseIdBlur = () => {
     if (formData.caseId) {
       fetchExaminationDetails(formData.caseId);
+    }else{
+      // If case ID is cleared, reset the form to allow new entry
+      resetForm();
     }
   };
 
@@ -268,6 +277,45 @@ const Examination = () => {
             </div>
           </div>
         </div>
+
+        {/* Patient Images Section */}
+        {images.length > 0 && (
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <div className="bg-indigo-50 px-4 py-2">
+              <h3 className="text-sm font-medium text-indigo-700">Patient Images</h3>
+            </div>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {images.map((image, index) => (
+                  <Dialog key={index} open={isDialogOpen && selectedImage === image} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <div
+                        className="flex justify-center cursor-pointer"
+                        onClick={() => {
+                          setSelectedImage(image);
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        <img
+                          src={`${BASE_URL}${image.path}`}
+                          alt={image.originalName}
+                          className="w-48 h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                        />
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] p-0 [&>button]:hidden">
+                      <img
+                        src={`${BASE_URL}${image.path}`}
+                        alt={image.originalName}
+                        className="w-full h-full object-contain"
+                      />
+                    </DialogContent>
+                  </Dialog>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Chief Complaints */}
         <div>
