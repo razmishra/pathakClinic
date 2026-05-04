@@ -142,12 +142,18 @@ const PatientsList = (props) => {
       setNewImages((prev) =>
         prev.filter((img) => img._id !== imageToRemove._id)
       );
-    } else {
-      // Remove from existing images
-      setPatientImages((prev) =>
-        prev.filter((img) => img._id !== imageToRemove._id)
-      );
+      return;
     }
+
+    // Remove from existing images and keep editedPatient synced
+    const updatedImages = patientImages.filter(
+      (img) => img._id !== imageToRemove._id
+    );
+    setPatientImages(updatedImages);
+    setEditedPatient((prevPatient) => ({
+      ...prevPatient,
+      fileName: updatedImages,
+    }));
   };
 
   const handleSave = async () => {
@@ -158,10 +164,15 @@ const PatientsList = (props) => {
     setIsSubmitting(true);
 
     try {
-      // First, update the patient information
+      // First, update the patient information, including any removed images
+      const payload = {
+        ...editedPatient,
+        fileName: patientImages,
+      };
+
       const response = await axios.patch(
         `${BASE_URL}${commonUrl.Patients.updateOne}/${editedPatient.caseId}`,
-        editedPatient
+        payload
       );
       const result = response.data?.responseData;
 
@@ -220,7 +231,7 @@ const PatientsList = (props) => {
         <TableBody>
           {patientsList.map((row) => (
             <TableRow
-              key={row.case}
+              key={row.caseId}
               className="cursor-pointer hover:bg-muted/100"
             >
               <TableCell className="font-medium">

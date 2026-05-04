@@ -31,7 +31,7 @@ const Patients = () => {
     searchTerm = null,
     page = 1,
     size = 10,
-  }) => {
+  } = {}) => {
     setLoading(true);
     try {
       const response = await axios.get(

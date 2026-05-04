@@ -178,7 +178,6 @@ const generateCaseId = async (req, res) => {
 const uploadFiles = async (req, res) => {
   try {
     const patientId = req.body.patientId;
-    console.log(patientId, " patient id");
 
     if (!req.files || req.files.length === 0) {
       return { success: false, message: "No files chosen" };
