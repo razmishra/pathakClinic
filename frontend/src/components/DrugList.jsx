@@ -41,6 +41,7 @@ import {
 
 // Prepare potency options for react-select
 const potencyOptions = [
+  "Q",
   "1X",
   "2X",
   "3X",
